@@ -47,7 +47,33 @@
   body { background: var(--bg); color: var(--text); font-family: var(--sans); font-size: 13px; height: 100vh; overflow: hidden; display: flex; flex-direction: column; }
 
   /* TOOLBAR */
-  .toolbar { display: flex; align-items: center; gap: 0; padding: 0 16px; height: 56px; background: var(--surface); border-bottom: 1px solid var(--border); flex-shrink: 0; flex-wrap: nowrap; overflow: hidden; }
+  .toolbar { display: flex; flex-direction: column; background: var(--surface); border-bottom: 1px solid var(--border); flex-shrink: 0; }
+  .toolbar-row { display: flex; align-items: center; gap: 0; padding: 0 12px; height: 44px; flex-wrap: nowrap; overflow: hidden; min-width: 0; }
+  .toolbar-row + .toolbar-row { border-top: 1px solid var(--border); }
+  @keyframes home-pulse {
+    0%, 100% { background: rgba(229,92,0,0.22); box-shadow: 0 0 0 0 rgba(229,92,0,0.0); }
+    50%       { background: rgba(229,92,0,0.52); box-shadow: 0 0 16px rgba(229,92,0,0.55); }
+  }
+  .tb-btn.home-btn {
+    font-family: var(--cond); font-weight: 900; font-size: 15px; letter-spacing: 2px;
+    padding: 0 22px; height: 34px; align-self: center;
+    border-width: 2px; border-radius: var(--radius-sm);
+    border-color: var(--accent2); color: var(--accent);
+    background: rgba(229,92,0,0.22);
+    transition: background 0.2s, border-color 0.2s, box-shadow 0.2s, color 0.2s;
+    flex-shrink: 0;
+  }
+  .tb-btn.home-btn.not-homed { animation: home-pulse 2.5s ease-in-out infinite; }
+  .tb-btn.home-btn.homed {
+    background: rgba(34,197,94,0.20); border-color: var(--green); color: var(--green);
+    animation: none; box-shadow: 0 0 10px rgba(34,197,94,0.28);
+  }
+  .tb-btn.home-btn:hover { filter: brightness(1.25); box-shadow: 0 0 16px rgba(229,92,0,0.55); animation: none; }
+  .tb-btn.home-btn.homed:hover { filter: brightness(1.25); box-shadow: 0 0 16px rgba(34,197,94,0.50); }
+  .tb-item-hidden { display: none !important; }
+  .tb-opt-toggle { display: inline-flex; align-items: center; gap: 6px; background: var(--surface3); border: 1px solid var(--border2); border-radius: var(--radius-sm); padding: 6px 12px; font-family: var(--cond); font-weight: 700; font-size: 11px; letter-spacing: 0.5px; color: var(--text2); cursor: pointer; transition: all 0.12s; user-select: none; }
+  .tb-opt-toggle:hover { background: var(--surface2); color: var(--text); border-color: var(--border2); }
+  .tb-opt-toggle input[type=checkbox] { accent-color: var(--accent); cursor: pointer; width: 14px; height: 14px; flex-shrink: 0; margin: 0; }
   .logo { font-family: var(--cond); font-weight: 700; font-size: 20px; letter-spacing: 2px; color: var(--accent); text-transform: uppercase; margin-right: 20px; white-space: nowrap; }
   .logo span { color: var(--text2); font-weight: 400; }
   .ws-section { display: flex; align-items: center; gap: 8px; flex: 1; min-width: 0; }
@@ -440,17 +466,12 @@
   #mod-tooltable[data-mod-size="xxl"] .tt-status-pill       { font-size: 11px; padding: 4px 12px; }
 
   /* ── Module lock bar ─────────────────────────────────────────────────────── */
-  .mod-lock-bar {
-    display: flex; align-items: center; justify-content: flex-end;
-    padding: 3px 10px; background: var(--surface); border-bottom: 1px solid var(--border);
-    flex-shrink: 0; height: 28px;
-  }
   .mod-lock-btn {
     display: flex; align-items: center; gap: 5px;
     background: none; border: 1px solid transparent; border-radius: var(--radius-sm);
     color: var(--text3); font-family: var(--cond); font-weight: 700; font-size: 10px;
     letter-spacing: 1.5px; text-transform: uppercase; padding: 2px 8px;
-    cursor: pointer; transition: all 0.15s;
+    cursor: pointer; transition: all 0.15s; margin-left: auto; flex-shrink: 0;
   }
   .mod-lock-btn:hover { border-color: var(--border2); color: var(--text2); background: var(--surface2); }
   .mod-lock-btn #modLockIcon { font-size: 13px; line-height: 1; }
@@ -916,8 +937,73 @@
     padding: 4px 10px; cursor: pointer; border-radius: var(--radius-sm);
     transition: all 0.12s;
   }
-  .mod-lines-btn:hover { background: var(--surface2); color: var(--text); }
-  .mod-lines-btn.active { background: rgba(229,92,0,0.2); border-color: var(--accent2); color: var(--accent); }
+  /* ── Signals module ─────────────────────────────────────────────────────── */
+  .sig-grid {
+    display: grid; grid-template-columns: 1fr 1fr; gap: 6px; padding: 4px;
+  }
+  .sig-item {
+    display: flex; align-items: center; gap: 9px;
+    background: var(--card); border: 1px solid var(--border);
+    border-radius: var(--radius-sm); padding: 9px 11px;
+    transition: border-color 0.2s, background 0.2s;
+  }
+  .sig-dot {
+    width: 11px; height: 11px; border-radius: 50%;
+    background: var(--surface3); border: 1px solid var(--border2);
+    flex-shrink: 0; transition: background 0.15s, box-shadow 0.15s, border-color 0.15s;
+  }
+  .sig-label {
+    font-family: var(--cond); font-weight: 700; font-size: 11px;
+    letter-spacing: 1.5px; text-transform: uppercase; color: var(--text3);
+    transition: color 0.15s;
+  }
+  /* Active state — generic fallback (overridden per-signal below) */
+  .sig-item.active { border-color: var(--border2); background: var(--surface2); }
+  .sig-item.active .sig-label { color: var(--text); }
+  /* X / Y / Z limits — amber */
+  .sig-item.active[data-sig="xlim"] .sig-dot,
+  .sig-item.active[data-sig="ylim"] .sig-dot,
+  .sig-item.active[data-sig="zlim"] .sig-dot {
+    background: var(--yellow); border-color: var(--yellow2); box-shadow: 0 0 8px rgba(245,158,11,0.7);
+  }
+  .sig-item.active[data-sig="xlim"],
+  .sig-item.active[data-sig="ylim"],
+  .sig-item.active[data-sig="zlim"] { border-color: var(--yellow2); }
+  .sig-item.active[data-sig="xlim"] .sig-label,
+  .sig-item.active[data-sig="ylim"] .sig-label,
+  .sig-item.active[data-sig="zlim"] .sig-label { color: var(--yellow); }
+  /* Probe — blue */
+  .sig-item.active[data-sig="probe"] .sig-dot {
+    background: var(--blue); border-color: var(--blue2); box-shadow: 0 0 8px rgba(59,130,246,0.7);
+  }
+  .sig-item.active[data-sig="probe"] { border-color: var(--blue2); }
+  .sig-item.active[data-sig="probe"] .sig-label { color: var(--blue); }
+  /* Toolsetter — teal */
+  .sig-item.active[data-sig="toolsetter"] .sig-dot {
+    background: var(--teal); border-color: var(--teal); box-shadow: 0 0 8px rgba(20,184,166,0.7);
+  }
+  .sig-item.active[data-sig="toolsetter"] { border-color: var(--teal); }
+  .sig-item.active[data-sig="toolsetter"] .sig-label { color: var(--teal); }
+  /* Door — orange */
+  .sig-item.active[data-sig="door"] .sig-dot {
+    background: var(--orange); border-color: var(--orange); box-shadow: 0 0 8px rgba(249,115,22,0.7);
+  }
+  .sig-item.active[data-sig="door"] { border-color: var(--orange); }
+  .sig-item.active[data-sig="door"] .sig-label { color: var(--orange); }
+  /* E-Stop — red pulsing */
+  @keyframes estop-pulse { 0%,100%{opacity:1;box-shadow:0 0 8px rgba(239,68,68,0.6)} 50%{opacity:0.6;box-shadow:0 0 18px rgba(239,68,68,0.9)} }
+  .sig-item.active[data-sig="estop"] .sig-dot {
+    background: var(--red); border-color: var(--red2); animation: estop-pulse 0.7s ease-in-out infinite;
+  }
+  .sig-item.active[data-sig="estop"] { border-color: var(--red2); background: rgba(239,68,68,0.08); }
+  .sig-item.active[data-sig="estop"] .sig-label { color: var(--red); }
+  /* Size scaling */
+  #mod-signals[data-mod-size="normal"] .sig-dot  { width: 11px; height: 11px; }
+  #mod-signals[data-mod-size="normal"] .sig-label { font-size: 11px; }
+  #mod-signals[data-mod-size="normal"] .sig-item  { padding: 9px 11px; }
+  #mod-signals[data-mod-size="large"]  .sig-dot  { width: 14px; height: 14px; }
+  #mod-signals[data-mod-size="large"]  .sig-label { font-size: 14px; }
+  #mod-signals[data-mod-size="large"]  .sig-item  { padding: 13px 14px; gap: 12px; }
 
 </style>
 </head>
@@ -925,32 +1011,40 @@
 
 <!-- TOOLBAR -->
 <div class="toolbar">
-  <div class="logo">Flexi<span>Sender</span></div>
-  <div class="ws-section" id="connSection">
-    <div class="status-dot" id="statusDot"></div>
-    <!-- WebSocket mode -->
-    <input class="ws-input" id="wsUrl" type="text" value="ws://192.168.5.1:80" placeholder="ws://host:port" />
-    <!-- Serial mode -->
-    <span class="serial-port-label" id="serialPortLabel">No port selected</span>
-    <button class="tb-btn primary" id="connectBtn" onclick="toggleConnect()">CONNECT</button>
-    <span class="status-text" id="statusText">DISCONNECTED</span>
+  <!-- ROW 1: Logo + Connection + Machine controls -->
+  <div class="toolbar-row" id="toolbar-row1">
+    <div class="logo">Flexi<span>Sender</span></div>
+    <div class="ws-section" id="connSection">
+      <div class="status-dot" id="statusDot"></div>
+      <!-- WebSocket mode -->
+      <input class="ws-input" id="wsUrl" type="text" value="ws://192.168.5.1:80" placeholder="ws://host:port" />
+      <!-- Serial mode -->
+      <span class="serial-port-label" id="serialPortLabel">No port selected</span>
+      <button class="tb-btn primary" id="connectBtn" onclick="toggleConnect()">CONNECT</button>
+      <span class="status-text" id="statusText">DISCONNECTED</span>
+    </div>
+    <div class="tb-sep"></div>
+    <div class="sd-btn-wrap" id="sdBtnWrap">
+      <button class="tb-btn sd-card-btn" id="sdCardBtn" onclick="toggleSdPanel()">💾 SD CARD</button>
+    </div>
+    <button class="tb-btn upload-open-btn" id="tbBtn-uploadOpen" onclick="document.getElementById('uploadFileInput').click()" title="Load file into sender AND upload to SD card">📤 UPLOAD &amp; OPEN</button>
+    <input type="file" id="uploadFileInput" accept=".nc,.gcode,.g,.ngc,.tap" onchange="uploadAndOpenFile(this)" />
+    <div class="tb-sep" id="tbSep-row1-machine"></div>
+    <button class="tb-btn danger" id="tbBtn-reset"  onclick="sendReset()">⚡ RESET</button>
+    <button class="tb-btn"        id="tbBtn-unlock" onclick="unlockAlarm()">🔓 UNLOCK</button>
   </div>
-  <div class="tb-sep"></div>
-  <div class="sd-btn-wrap" id="sdBtnWrap">
-    <button class="tb-btn sd-card-btn" id="sdCardBtn" onclick="toggleSdPanel()">💾 SD CARD</button>
+  <!-- ROW 2: File open + Run controls + HOME on right -->
+  <div class="toolbar-row" id="toolbar-row2">
+    <button class="tb-btn" id="tbBtn-open" onclick="document.getElementById('fileInput').click()">📂 OPEN</button>
+    <input type="file" id="fileInput" accept=".nc,.gcode,.g,.ngc,.tap" onchange="loadFile(this)" />
+    <div class="tb-sep" id="tbSep-row2-run"></div>
+    <button class="tb-btn success" id="btnStart" onclick="startJob()" disabled>▶ RUN</button>
+    <button class="tb-btn"         id="btnPause" onclick="pauseJob()" disabled>⏸ HOLD</button>
+    <button class="tb-btn danger"  id="btnStop"  onclick="stopJob()"  disabled>■ STOP</button>
+    <div style="flex:1"></div>
+    <div class="tb-sep" id="tbSep-row2-home"></div>
+    <button class="tb-btn home-btn not-homed" id="tbBtn-home" onclick="sendHome()">⌂ HOME</button>
   </div>
-  <button class="tb-btn upload-open-btn" onclick="document.getElementById('uploadFileInput').click()" title="Load file into sender AND upload to SD card">📤 UPLOAD &amp; OPEN</button>
-  <input type="file" id="uploadFileInput" accept=".nc,.gcode,.g,.ngc,.tap" onchange="uploadAndOpenFile(this)" />
-  <button class="tb-btn" onclick="document.getElementById('fileInput').click()">📂 OPEN</button>
-  <input type="file" id="fileInput" accept=".nc,.gcode,.g,.ngc,.tap" onchange="loadFile(this)" />
-  <div class="tb-sep"></div>
-  <button class="tb-btn success" id="btnStart" onclick="startJob()" disabled>▶  RUN</button>
-  <button class="tb-btn" id="btnPause" onclick="pauseJob()" disabled>⏸ HOLD</button>
-  <button class="tb-btn danger" id="btnStop" onclick="stopJob()" disabled>■ STOP</button>
-  <div class="tb-sep"></div>
-  <button class="tb-btn danger" onclick="sendReset()">⚡ RESET</button>
-  <button class="tb-btn" onclick="unlockAlarm()">🔓 UNLOCK</button>
-  <button class="tb-btn" onclick="sendHome()">⌂ HOME</button>
 </div>
 
 <!-- SERIAL NOT SUPPORTED WARNING -->
@@ -984,18 +1078,14 @@
   <button class="tab-btn" id="tab-tooltable" onclick="switchTab('tooltable')">TOOL TABLE</button>
   <button class="tab-btn" id="tab-modules" onclick="switchTab('modules')">MODULES</button>
   <button class="tab-btn" id="tab-options" onclick="switchTab('options')">⚙ OPTIONS</button>
-</div>
-
-<!-- TAB: RUN -->
-<div class="tab-panel active" id="tabpanel-run" style="flex-direction:column;overflow:hidden;">
-
-<!-- MODULE LOCK BAR -->
-<div class="mod-lock-bar">
   <button class="mod-lock-btn" id="modLockBtn" onclick="toggleModLock()" title="Lock / unlock module positions">
     <span id="modLockIcon">🔓</span>
     <span id="modLockLabel">UNLOCKED</span>
   </button>
 </div>
+
+<!-- TAB: RUN -->
+<div class="tab-panel active" id="tabpanel-run" style="flex-direction:column;overflow:hidden;">
 
 <!-- MAIN -->
 <div class="main">
@@ -1469,6 +1559,28 @@
     </div>
   </div>
 
+  <!-- ═══ MODULE: SIGNALS ═══ -->
+  <div class="module-card mod-hidden" id="mod-signals" data-mod-size="normal" style="top:10px;left:594px">
+    <div class="module-drag-handle"
+         onmousedown="modDragStart(event,'mod-signals')"
+         ontouchstart="modTouchStart(event,'mod-signals')">
+      <span class="module-drag-dots">⠿⠿</span>
+      <span class="module-drag-title">Signals</span>
+      <button class="module-drag-close" onclick="toggleModule('signals',false)">✕</button>
+    </div>
+    <div class="module-body" style="padding:4px">
+      <div class="sig-grid">
+        <div class="sig-item" data-sig="xlim"      id="sig-xlim">      <div class="sig-dot"></div><div class="sig-label">X Limit</div></div>
+        <div class="sig-item" data-sig="ylim"      id="sig-ylim">      <div class="sig-dot"></div><div class="sig-label">Y Limit</div></div>
+        <div class="sig-item" data-sig="zlim"      id="sig-zlim">      <div class="sig-dot"></div><div class="sig-label">Z Limit</div></div>
+        <div class="sig-item" data-sig="probe"     id="sig-probe">     <div class="sig-dot"></div><div class="sig-label">Probe</div></div>
+        <div class="sig-item" data-sig="toolsetter"id="sig-toolsetter"><div class="sig-dot"></div><div class="sig-label">Toolsetter</div></div>
+        <div class="sig-item" data-sig="door"      id="sig-door">      <div class="sig-dot"></div><div class="sig-label">Door</div></div>
+        <div class="sig-item" data-sig="estop"     id="sig-estop">     <div class="sig-dot"></div><div class="sig-label">E-Stop</div></div>
+      </div>
+    </div>
+  </div>
+
 </div><!-- /main -->
 </div><!-- /tab-panel-run -->
 
@@ -1620,7 +1732,21 @@
             <button class="mod-size-btn" onclick="setModSize('limits','large',event)">Large</button>
           </div>
         </div>
-      </div></div>
+      </div>
+
+      <div class="mod-toggle-card" id="modcfg-signals">
+        <div class="mod-toggle-icon">🔴</div>
+        <div class="mod-toggle-info">
+          <div style="display:flex;align-items:center;gap:10px">
+            <div class="mod-toggle-name" style="flex:1">Signals</div>
+            <div class="mod-switch" onclick="toggleModule('signals')"></div>
+          </div>
+          <div class="mod-toggle-desc">Live indicator lights for X, Y and Z limit switches, probe, toolsetter, door and E-Stop inputs. Reads the Pn: field from the GRBL status report.</div>
+          <div class="mod-size-row">
+            <button class="mod-size-btn active" onclick="setModSize('signals','normal',event)">Normal</button>
+            <button class="mod-size-btn" onclick="setModSize('signals','large',event)">Large</button>
+          </div>
+        </div>
       </div>
 
     </div>
@@ -1929,6 +2055,37 @@
 
             <div style="display:flex;gap:8px;margin-top:4px;">
               <button class="opt-action-btn" onclick="optResetAllColors()">↺ Reset All Colours</button>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- ── TOOLBAR BUTTON VISIBILITY ── -->
+      <div class="options-card">
+        <div class="options-card-icon">🔧</div>
+        <div class="options-card-body">
+          <div class="options-card-title">Toolbar Button Visibility</div>
+          <div class="options-card-desc">Choose which buttons appear on each toolbar row. Changes apply immediately and are saved.</div>
+          <div style="display:flex;flex-direction:column;gap:12px;margin-top:12px;">
+            <div>
+              <div style="font-family:var(--cond);font-size:10px;letter-spacing:1.5px;color:var(--text3);text-transform:uppercase;margin-bottom:8px;">Row 1 — Machine Controls</div>
+              <div style="display:flex;flex-wrap:wrap;gap:6px;">
+                <label class="tb-opt-toggle" data-btn="tbBtn-reset"><input type="checkbox" onchange="saveTbOpt(this)"> ⚡ Reset</label>
+                <label class="tb-opt-toggle" data-btn="tbBtn-unlock"><input type="checkbox" onchange="saveTbOpt(this)"> 🔓 Unlock</label>
+                <label class="tb-opt-toggle" data-btn="sdBtnWrap"><input type="checkbox" onchange="saveTbOpt(this)"> 💾 SD Card</label>
+                <label class="tb-opt-toggle" data-btn="tbBtn-uploadOpen"><input type="checkbox" onchange="saveTbOpt(this)"> 📤 Upload &amp; Open</label>
+              </div>
+            </div>
+            <div style="height:1px;background:var(--border);"></div>
+            <div>
+              <div style="font-family:var(--cond);font-size:10px;letter-spacing:1.5px;color:var(--text3);text-transform:uppercase;margin-bottom:8px;">Row 2 — Run Controls</div>
+              <div style="display:flex;flex-wrap:wrap;gap:6px;">
+                <label class="tb-opt-toggle" data-btn="tbBtn-open"><input type="checkbox" onchange="saveTbOpt(this)"> 📂 Open</label>
+                <label class="tb-opt-toggle" data-btn="btnStart"><input type="checkbox" onchange="saveTbOpt(this)"> ▶ Run</label>
+                <label class="tb-opt-toggle" data-btn="btnPause"><input type="checkbox" onchange="saveTbOpt(this)"> ⏸ Hold</label>
+                <label class="tb-opt-toggle" data-btn="btnStop"><input type="checkbox" onchange="saveTbOpt(this)"> ■ Stop</label>
+                <label class="tb-opt-toggle" data-btn="tbBtn-home"><input type="checkbox" onchange="saveTbOpt(this)"> ⌂ Home</label>
+              </div>
             </div>
           </div>
         </div>
@@ -2570,6 +2727,7 @@ function onClose() {
   updateRunButtons();
   const fb = document.getElementById('limitsFrameBtn');
   if (fb) fb.disabled = true;
+  machineHomed = false; _prevMachineStateSl = ''; _updateHomeBtnHomed();
 }
 
 // Receive buffer shared by both WS and Serial paths
@@ -2676,6 +2834,7 @@ function parseResponse(raw) {
 function parseStatus(s) {
   const parts = s.split('|');
   setMachineState(parts[0]);
+  let hasPn = false;
   for (let i = 1; i < parts.length; i++) {
     const colon = parts[i].indexOf(':');
     if (colon === -1) continue;
@@ -2738,7 +2897,13 @@ function parseStatus(s) {
       const sel = document.getElementById('wcsSelect');
       if (sel && ['G54','G55','G56','G57','G58','G59'].includes(wcs)) sel.value = wcs;
     }
+    if (key === 'Pn') {
+      hasPn = true;
+      updateSignals(vals[0] || '');
+    }
   }
+  // If Pn: field was absent this cycle all inputs are clear
+  if (!hasPn) updateSignals('');
   document.getElementById('vpStats').innerHTML =
     `X: ${machineX.toFixed(3)}&nbsp;&nbsp;Y: ${machineY.toFixed(3)}&nbsp;&nbsp;Z: ${machineZ.toFixed(3)}<br>` +
     `RX: ${rxInFlight}/${RX_BUFFER_SIZE}B&nbsp;&nbsp;QUEUE: ${sentQueue.length}`;
@@ -2746,12 +2911,51 @@ function parseStatus(s) {
 
 function fmtPos(v) { return (parseFloat(v) || 0).toFixed(3); }
 
+// ── Signals module ────────────────────────────────────────────────────────────
+// Maps Pn: pin characters → signal element IDs
+// GRBL/GrblHAL pin chars: X Y Z = limits, P = probe, T = toolsetter (GrblHAL),
+//                         D = door, R = reset/e-stop
+const SIG_PIN_MAP = {
+  'X': 'sig-xlim',
+  'Y': 'sig-ylim',
+  'Z': 'sig-zlim',
+  'P': 'sig-probe',
+  'T': 'sig-toolsetter',
+  'D': 'sig-door',
+  'R': 'sig-estop',
+};
+
+function updateSignals(pinStr) {
+  const mod = document.getElementById('mod-signals');
+  if (!mod || mod.classList.contains('mod-hidden')) return;
+  const active = new Set(pinStr.toUpperCase().split(''));
+  Object.entries(SIG_PIN_MAP).forEach(([ch, elId]) => {
+    const el = document.getElementById(elId);
+    if (el) el.classList.toggle('active', active.has(ch));
+  });
+}
+
+let machineHomed = false;
+let _prevMachineStateSl = '';
+
 function setMachineState(s) {
   const badge = document.getElementById('stateBadge');
   badge.className = 'state-badge';
   const sl = s.toLowerCase().split(':')[0];
   if (['idle','run','hold','alarm','jog','home','door','check','sleep'].includes(sl)) badge.classList.add(sl);
   document.getElementById('stateText').textContent = s.toUpperCase();
+
+  // Track homed status: ALARM → not homed. IDLE after HOME cycle → homed.
+  if (sl === 'alarm') { machineHomed = false; _updateHomeBtnHomed(); }
+  if (sl === 'idle' && _prevMachineStateSl === 'home') { machineHomed = true; _updateHomeBtnHomed(); }
+  _prevMachineStateSl = sl;
+}
+
+function _updateHomeBtnHomed() {
+  const btn = document.getElementById('tbBtn-home');
+  if (!btn) return;
+  btn.classList.toggle('homed',     machineHomed);
+  btn.classList.toggle('not-homed', !machineHomed);
 }
 
 function setStatus(s) {
@@ -3503,6 +3707,7 @@ const MODULE_DEFS = [
   { id: 'console',   icon: '💻', name: 'Console'          },
   { id: 'tooltable', icon: '🔩', name: 'Tool Table'       },
   { id: 'limits',    icon: '📐', name: 'Program Limits'   },
+  { id: 'signals',   icon: '🔴', name: 'Signals'          },
 ];
 
 // Size presets: width in px (height is always auto / content-driven)
@@ -3522,6 +3727,7 @@ const MOD_DEFAULTS = {
   console:   { x: 594, y: 10,  enabled: false, size: 'normal' },
   tooltable: { x: 10,  y: 10,  enabled: false, size: 'xl'     },
   limits:    { x: 302, y: 10,  enabled: false, size: 'normal' },
+  signals:   { x: 594, y: 10,  enabled: false, size: 'normal' },
 };
 
 let consoleMaxLines = 50; // default — changed by setConsoleLines()
@@ -5030,12 +5236,80 @@ function optLoadTabLocks() {
   } catch(_) {}
 }
 
+// ═══════════════════════════════════════════════
+// TOOLBAR BUTTON VISIBILITY
+// ═══════════════════════════════════════════════
+const TB_BTN_DEFAULTS = {
+  'tbBtn-reset':      true,
+  'tbBtn-unlock':     true,
+  'sdBtnWrap':        true,
+  'tbBtn-uploadOpen': true,
+  'tbBtn-open':       true,
+  'btnStart':         true,
+  'btnPause':         true,
+  'btnStop':          true,
+  'tbBtn-home':       true,
+};
+
+function initToolbarOptions() {
+  let stored = {};
+  try { stored = JSON.parse(localStorage.getItem('fs-tb-btn-opts') || '{}'); } catch(_) {}
+  document.querySelectorAll('.tb-opt-toggle').forEach(label => {
+    const btnId   = label.dataset.btn;
+    const cb      = label.querySelector('input[type=checkbox]');
+    const visible = (btnId in stored) ? stored[btnId] : (TB_BTN_DEFAULTS[btnId] !== false);
+    cb.checked = visible;
+    const el = document.getElementById(btnId);
+    if (el) el.classList.toggle('tb-item-hidden', !visible);
+  });
+  _updateRow1MachineSep();
+  _updateRow2Visibility();
+}
+
+function saveTbOpt(cb) {
+  const btnId = cb.closest('.tb-opt-toggle').dataset.btn;
+  const el = document.getElementById(btnId);
+  if (el) el.classList.toggle('tb-item-hidden', !cb.checked);
+  let stored = {};
+  try { stored = JSON.parse(localStorage.getItem('fs-tb-btn-opts') || '{}'); } catch(_) {}
+  stored[btnId] = cb.checked;
+  try { localStorage.setItem('fs-tb-btn-opts', JSON.stringify(stored)); } catch(_) {}
+  _updateRow1MachineSep();
+  _updateRow2Visibility();
+}
+
+function _updateRow1MachineSep() {
+  const anyVisible = ['tbBtn-reset','tbBtn-unlock'].some(id => {
+    const el = document.getElementById(id);
+    return el && !el.classList.contains('tb-item-hidden');
+  });
+  const sep = document.getElementById('tbSep-row1-machine');
+  if (sep) sep.classList.toggle('tb-item-hidden', !anyVisible);
+}
+
+function _updateRow2Visibility() {
+  const runBtns    = ['tbBtn-open','btnStart','btnPause','btnStop'];
+  const anyRunVis  = runBtns.some(id => { const el = document.getElementById(id); return el && !el.classList.contains('tb-item-hidden'); });
+  const homeEl     = document.getElementById('tbBtn-home');
+  const homeVis    = homeEl && !homeEl.classList.contains('tb-item-hidden');
+  const row2       = document.getElementById('toolbar-row2');
+  if (row2) row2.style.display = (anyRunVis || homeVis) ? '' : 'none';
+  // Separator before run buttons: hide when OPEN is hidden
+  const openHidden = !document.getElementById('tbBtn-open') || document.getElementById('tbBtn-open').classList.contains('tb-item-hidden');
+  const runSep     = document.getElementById('tbSep-row2-run');
+  if (runSep) runSep.classList.toggle('tb-item-hidden', openHidden);
+  // Separator before HOME: hide when HOME is hidden
+  const homeSep    = document.getElementById('tbSep-row2-home');
+  if (homeSep) homeSep.classList.toggle('tb-item-hidden', !homeVis);
+}
+
 // Initialise options on page load
 window.addEventListener('load', () => {
   optLoadConnSettings();
   optLoadColors();
   optLoadTabLocks();
   optBuildTabLockList();
+  initToolbarOptions();
 });
 </script>
 </body>

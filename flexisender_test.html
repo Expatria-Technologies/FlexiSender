@@ -53,13 +53,6 @@
   .ws-section { display: flex; align-items: center; gap: 8px; flex: 1; min-width: 0; }
   .ws-input { background: var(--surface3); border: 1px solid var(--border2); color: var(--text); font-family: var(--mono); font-size: 12px; padding: 7px 12px; width: 220px; outline: none; border-radius: var(--radius-sm); transition: border-color 0.2s; flex-shrink: 0; }
   .ws-input:focus { border-color: var(--accent); }
-  .serial-port-label { font-family: var(--mono); font-size: 12px; color: var(--text2); background: var(--surface3); border: 1px solid var(--border2); padding: 7px 12px; border-radius: var(--radius-sm); flex-shrink: 0; max-width: 220px; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; display: none; }
-  body.conn-serial   .serial-port-label { display: block; }
-  body.conn-serial   #wsUrl             { display: none; }
-  body.conn-websocket .serial-port-label { display: none; }
-  body.conn-websocket #wsUrl            { display: block; }
-  .serial-unsupported-bar { display: none; background: rgba(239,68,68,0.15); border-bottom: 1px solid rgba(239,68,68,0.4); color: var(--red); font-family: var(--cond); font-size: 11px; letter-spacing: 1px; text-transform: uppercase; padding: 6px 16px; flex-shrink: 0; }
-  body.serial-unsupported .serial-unsupported-bar { display: block; }
   .status-dot { width: 9px; height: 9px; border-radius: 50%; background: var(--red); flex-shrink: 0; box-shadow: 0 0 0 2px rgba(239,68,68,0.25); }
   .status-dot.connected { background: var(--green); box-shadow: 0 0 0 2px rgba(34,197,94,0.25); }
   .status-dot.connecting { background: var(--yellow); box-shadow: 0 0 0 2px rgba(245,158,11,0.25); animation: pulse 1s infinite; }
@@ -696,9 +689,6 @@
   .opt-reset-btn:hover { background: var(--border); color: var(--text2); }
   .opt-action-btn { background: rgba(229,92,0,0.18); border: 1px solid var(--accent2); color: var(--accent); font-family: var(--cond); font-weight: 700; font-size: 11px; letter-spacing: 0.5px; text-transform: uppercase; padding: 8px 16px; cursor: pointer; border-radius: var(--radius-sm); transition: all 0.15s; }
   .opt-action-btn:hover { background: rgba(229,92,0,0.32); }
-  .opt-conn-btn { flex: 1; background: var(--surface3); border: 1px solid var(--border2); color: var(--text2); font-family: var(--cond); font-weight: 700; font-size: 12px; letter-spacing: 0.5px; text-transform: uppercase; padding: 10px 8px; cursor: pointer; border-radius: var(--radius-sm); transition: all 0.15s; text-align: center; }
-  .opt-conn-btn:hover { background: var(--border); color: var(--text); }
-  .opt-conn-btn.active { background: rgba(229,92,0,0.22); border-color: var(--accent2); color: var(--accent); }
 
   /* Tab lock list items */
   .opt-tab-lock-item { display: flex; align-items: center; gap: 10px; padding: 9px 12px; background: var(--surface2); border: 1px solid var(--border); border-radius: var(--radius-sm); }
@@ -921,17 +911,14 @@
 
 </style>
 </head>
-<body class="conn-websocket">
+<body>
 
 <!-- TOOLBAR -->
 <div class="toolbar">
   <div class="logo">Flexi<span>Sender</span></div>
-  <div class="ws-section" id="connSection">
+  <div class="ws-section">
     <div class="status-dot" id="statusDot"></div>
-    <!-- WebSocket mode -->
     <input class="ws-input" id="wsUrl" type="text" value="ws://192.168.5.1:80" placeholder="ws://host:port" />
-    <!-- Serial mode -->
-    <span class="serial-port-label" id="serialPortLabel">No port selected</span>
     <button class="tb-btn primary" id="connectBtn" onclick="toggleConnect()">CONNECT</button>
     <span class="status-text" id="statusText">DISCONNECTED</span>
   </div>
@@ -952,9 +939,6 @@
   <button class="tb-btn" onclick="unlockAlarm()">🔓 UNLOCK</button>
   <button class="tb-btn" onclick="sendHome()">⌂ HOME</button>
 </div>
-
-<!-- SERIAL NOT SUPPORTED WARNING -->
-<div class="serial-unsupported-bar">⚠ Web Serial API not supported in this browser — use Chrome or Edge for USB/Serial connections</div>
 
 <!-- SD CARD DROPDOWN PANEL -->
 <div class="sd-panel" id="sdPanel">
@@ -1779,69 +1763,6 @@
 
     <div class="options-grid">
 
-      <!-- ── CONNECTION TYPE ── -->
-      <div class="options-card">
-        <div class="options-card-icon">🔌</div>
-        <div class="options-card-body">
-          <div class="options-card-title">Connection Type</div>
-          <div class="options-card-desc">Choose how FlexiSender connects to your controller. WebSocket connects over your network (WiFi/Ethernet). USB/Serial connects directly via a USB cable using the Web Serial API (Chrome &amp; Edge only).</div>
-          <div style="display:flex;gap:8px;margin-top:12px;" id="connTypeBtns">
-            <button class="opt-conn-btn active" id="connBtnWs"     onclick="optSetConnMode('websocket')">🌐 WebSocket</button>
-            <button class="opt-conn-btn"        id="connBtnSerial" onclick="optSetConnMode('serial')">🔌 USB / Serial</button>
-          </div>
-          <!-- WebSocket sub-options -->
-          <div id="optWsSection" style="margin-top:12px;">
-            <div class="opt-field-label">WebSocket URL</div>
-            <div style="font-family:var(--mono);font-size:11px;color:var(--text2);margin-top:2px;">Edit directly in the toolbar. Format: <span style="color:var(--accent)">ws://host:port</span></div>
-          </div>
-          <!-- Serial sub-options -->
-          <div id="optSerialSection" style="margin-top:12px;display:none;">
-            <div style="display:flex;align-items:center;gap:10px;flex-wrap:wrap;">
-              <div style="flex:1;min-width:140px;">
-                <div class="opt-field-label">Baud Rate</div>
-                <select class="opt-input" id="optBaudRate" onchange="optSaveConnSettings()" style="cursor:pointer;">
-                  <option value="9600">9600</option>
-                  <option value="19200">19200</option>
-                  <option value="38400">38400</option>
-                  <option value="57600">57600</option>
-                  <option value="115200" selected>115200</option>
-                  <option value="230400">230400</option>
-                  <option value="250000">250000</option>
-                  <option value="500000">500000</option>
-                  <option value="1000000">1000000</option>
-                  <option value="2000000">2000000</option>
-                </select>
-              </div>
-              <div style="flex:1;min-width:140px;">
-                <div class="opt-field-label">Data Bits</div>
-                <select class="opt-input" id="optDataBits" onchange="optSaveConnSettings()" style="cursor:pointer;">
-                  <option value="7">7</option>
-                  <option value="8" selected>8</option>
-                </select>
-              </div>
-              <div style="flex:1;min-width:140px;">
-                <div class="opt-field-label">Stop Bits</div>
-                <select class="opt-input" id="optStopBits" onchange="optSaveConnSettings()" style="cursor:pointer;">
-                  <option value="1" selected>1</option>
-                  <option value="2">2</option>
-                </select>
-              </div>
-              <div style="flex:1;min-width:140px;">
-                <div class="opt-field-label">Parity</div>
-                <select class="opt-input" id="optParity" onchange="optSaveConnSettings()" style="cursor:pointer;">
-                  <option value="none" selected>None</option>
-                  <option value="even">Even</option>
-                  <option value="odd">Odd</option>
-                </select>
-              </div>
-            </div>
-            <div style="margin-top:10px;font-family:var(--sans);font-size:11px;color:var(--text2);line-height:1.6;">
-              Click <strong style="color:var(--text)">CONNECT</strong> in the toolbar to open the browser's port picker and connect. The browser will remember your last port.
-            </div>
-          </div>
-        </div>
-      </div>
-
       <!-- ── 3D VIEWPORT EXTENTS ── -->
       <div class="options-card">
         <div class="options-card-icon">🗺️</div>
@@ -2391,20 +2312,13 @@ function updateExecutedPath(segIdx) {
 }
 
 // ═══════════════════════════════════════════════
-// CONNECTION LAYER — WebSocket & USB/Serial
+// WEBSOCKET & COMMS
 // ═══════════════════════════════════════════════
-let ws            = null;          // WebSocket instance
-let serialPort    = null;          // Web Serial port
-let serialWriter  = null;          // WritableStreamDefaultWriter
-let serialReader  = null;          // ReadableStreamDefaultReader
-let serialAbort   = null;          // AbortController for read loop
-let connMode      = 'websocket';   // 'websocket' | 'serial'
-let connected     = false;
-
+let ws = null, connected = false;
 let jogStepXY = 10, jogStepZ = 1, statusInterval = null;
-let _isJogging = false;
-const POLL_JOG  = 50;
-const POLL_NORM = 100;
+let _isJogging = false;   // true while any jog is active (button held or keyboard)
+const POLL_JOG  = 50;     // ms — 20 Hz while jogging for crisp DRO response
+const POLL_NORM = 100;    // ms — 10 Hz at idle / running
 
 function setPollRate(ms) {
   if (statusInterval) clearInterval(statusInterval);
@@ -2416,145 +2330,70 @@ function setJogging(active) {
   _isJogging = active;
   if (connected) setPollRate(active ? POLL_JOG : POLL_NORM);
 }
-
 let cmdHistory = [], histIdx = -1;
 let machineX = 0, machineY = 0, machineZ = 0;
 
 // ── IOSender-style character-counting aggressive buffer ──────────────────────
-let RX_BUFFER_SIZE = 128;
-let rxInFlight = 0;
-const sentQueue = [];
+//
+// GrblHAL has a serial RX buffer (default 128 bytes, reported in [OPT:,blocks,rxBytes]).
+// Rather than counting line slots (naive block-counting), we track *byte occupancy*
+// of the RX buffer exactly, just as IOSender does:
+//
+//   - On each send: rxInFlight += byteLength(line + '\n')
+//   - On each 'ok' or 'error:': rxInFlight -= byteLength(corresponding sent line + '\n')
+//   - Invariant: rxInFlight must never exceed RX_BUFFER_SIZE - 1 (leave 1 byte headroom)
+//
+// This means we can send MANY short lines back-to-back without waiting for 'ok',
+// keeping the controller's planner buffer fully saturated — that's "aggressive buffering".
+//
+// Real-time commands (?, !, ~, \x18, overrides) are intercepted by the controller
+// BEFORE the RX buffer and NEVER count toward byte tracking.
+
+let RX_BUFFER_SIZE = 128;   // default; updated from [OPT:] on connect
+let rxInFlight = 0;         // bytes currently occupying the controller RX buffer
+const sentQueue = [];       // [{line, bytes}] — parallel to 'ok' responses
 let gcodeLines = [];
-let lineHead = 0;
+let lineHead = 0;           // next line index to send
 let running = false, paused = false;
 let segmentIndex = 0;
 
+// Encoder to count UTF-8 bytes exactly (same as controller sees)
 const _enc = new TextEncoder();
 function byteLen(s) { return _enc.encode(s).length; }
 
 function toggleConnect() { connected ? disconnect() : connect(); }
 
-// ── Top-level connect ─────────────────────────────────────────────────────────
 function connect() {
-  if (connMode === 'serial') connectSerial();
-  else connectWs();
-}
-
-function disconnect() {
-  if (connMode === 'serial') disconnectSerial();
-  else disconnectWs();
-}
-
-// ── WebSocket ─────────────────────────────────────────────────────────────────
-function connectWs() {
   const url = document.getElementById('wsUrl').value.trim();
   if (!url) return;
   setStatus('connecting');
-  log('info', 'Connecting to ' + url + '…');
+  log('info', 'Connecting to ' + url + '...');
   try {
     ws = new WebSocket(url);
-    ws.onopen    = onOpen;
+    ws.onopen = onOpen;
     ws.onmessage = onMessage;
-    ws.onclose   = onClose;
-    ws.onerror   = () => { log('err', 'WebSocket error — check URL and that the controller is reachable'); };
+    ws.onclose = onClose;
+    ws.onerror = onError;
   } catch(e) { log('err', 'Connection failed: ' + e.message); setStatus('disconnected'); }
 }
 
-function disconnectWs() { if (ws) ws.close(); }
+function disconnect() { if (ws) ws.close(); }
 
-function onMessage(evt) {
-  _rxBuf += evt.data;
-  let nl;
-  while ((nl = _rxBuf.indexOf('\n')) !== -1) {
-    const line = _rxBuf.slice(0, nl).replace(/\r$/, '').trim();
-    _rxBuf = _rxBuf.slice(nl + 1);
-    if (line) parseResponse(line);
-  }
-}
-
-// ── USB / Serial ──────────────────────────────────────────────────────────────
-async function connectSerial() {
-  if (!navigator.serial) {
-    log('err', 'Web Serial API not supported — use Chrome or Edge');
-    return;
-  }
-  try {
-    setStatus('connecting');
-    log('info', 'Opening port picker…');
-    serialPort = await navigator.serial.requestPort();
-    const baud     = parseInt(document.getElementById('optBaudRate').value)  || 115200;
-    const dataBits = parseInt(document.getElementById('optDataBits').value)  || 8;
-    const stopBits = parseInt(document.getElementById('optStopBits').value)  || 1;
-    const parity   = document.getElementById('optParity').value || 'none';
-    await serialPort.open({ baudRate: baud, dataBits, stopBits, parity });
-
-    // Update port label with port info
-    const info = serialPort.getInfo();
-    const label = info.usbVendorId
-      ? `USB ${info.usbVendorId.toString(16).toUpperCase()}:${(info.usbProductId||0).toString(16).toUpperCase()} @ ${baud}`
-      : `Serial @ ${baud}`;
-    document.getElementById('serialPortLabel').textContent = label;
-
-    serialAbort  = new AbortController();
-    serialWriter = serialPort.writable.getWriter();
-    serialReader = serialPort.readable.getReader();
-
-    // Kick off async read loop
-    serialReadLoop();
-
-    onOpen();
-    log('info', `Serial connected — ${baud} baud`);
-  } catch(e) {
-    if (e.name !== 'NotFoundError') log('err', 'Serial error: ' + e.message);
-    setStatus('disconnected');
-    serialPort = null; serialWriter = null; serialReader = null;
-  }
-}
-
-async function serialReadLoop() {
-  try {
-    while (true) {
-      const { value, done } = await serialReader.read();
-      if (done) break;
-      // value is Uint8Array — decode and feed into the same rx buffer
-      _rxBuf += new TextDecoder().decode(value);
-      let nl;
-      while ((nl = _rxBuf.indexOf('\n')) !== -1) {
-        const line = _rxBuf.slice(0, nl).replace(/\r$/, '').trim();
-        _rxBuf = _rxBuf.slice(nl + 1);
-        if (line) parseResponse(line);
-      }
-    }
-  } catch(e) {
-    if (e.name !== 'AbortError') log('err', 'Serial read error: ' + e.message);
-  } finally {
-    // Port closed or error — trigger disconnect cleanup
-    if (connected) onClose();
-  }
-}
-
-async function disconnectSerial() {
-  try {
-    if (serialReader) { await serialReader.cancel(); serialReader.releaseLock(); serialReader = null; }
-    if (serialWriter) { serialWriter.releaseLock(); serialWriter = null; }
-    if (serialPort)   { await serialPort.close(); serialPort = null; }
-  } catch(e) { /* ignore close errors */ }
-  document.getElementById('serialPortLabel').textContent = 'No port selected';
-  onClose();
-}
-
-// ── Shared open / close handlers ─────────────────────────────────────────────
 function onOpen() {
   connected = true;
   rxInFlight = 0;
   sentQueue.length = 0;
   _rxBuf = '';
   setStatus('connected');
-  log('info', connMode === 'serial' ? 'Serial connected' : 'WebSocket connected');
+  log('info', 'WebSocket connected');
   document.getElementById('connectBtn').textContent = 'DISCONNECT';
+  // Poll status at 10 Hz normally; ramps to 20 Hz during jog
   setPollRate(POLL_NORM);
+  // Soft-reset, then after dust settles query build info.
+  // Clear sentQueue after reset so startup ok responses don't pollute job tracking.
   rtSend('\x18');
   setTimeout(() => { sentQueue.length = 0; rxInFlight = 0; cmdSend('$I+'); }, 600);
+  // Update frame button state
   const fb = document.getElementById('limitsFrameBtn');
   if (fb && progLimits) fb.disabled = false;
 }
@@ -2568,35 +2407,39 @@ function onClose() {
   running = false; paused = false;
   rxInFlight = 0; sentQueue.length = 0;
   updateRunButtons();
+  // Disable frame button when disconnected
   const fb = document.getElementById('limitsFrameBtn');
   if (fb) fb.disabled = true;
 }
 
-// Receive buffer shared by both WS and Serial paths
+function onError() { log('err', 'WebSocket error — check URL and that the controller is reachable'); }
+
+// Receive and split on \n in case WS frames arrive merged
 let _rxBuf = '';
-
-// ── Send helpers ──────────────────────────────────────────────────────────────
-
-// rtSend: real-time byte(s) — no newline, not tracked in byte counter
-function rtSend(char) {
-  if (connMode === 'serial') {
-    if (serialWriter) serialWriter.write(new TextEncoder().encode(char)).catch(() => {});
-  } else {
-    if (ws && ws.readyState === WebSocket.OPEN) ws.send(char);
+function onMessage(evt) {
+  _rxBuf += evt.data;
+  let nl;
+  while ((nl = _rxBuf.indexOf('\n')) !== -1) {
+    const line = _rxBuf.slice(0, nl).replace(/\r$/, '').trim();
+    _rxBuf = _rxBuf.slice(nl + 1);
+    if (line) parseResponse(line);
   }
 }
 
-// cmdSend: tracked G-code / $ command, terminated with \n
+// ── Send helpers ─────────────────────────────────────────────────────────────
+
+// rtSend: real-time command — bypasses RX buffer, no newline, no tracking
+function rtSend(char) {
+  if (ws && ws.readyState === WebSocket.OPEN) ws.send(char);
+}
+
+// cmdSend: normal G-code / $ command — tracked in byte counter
+// GrblHAL expects each command terminated with \n (LF).
 function cmdSend(line) {
+  if (!ws || ws.readyState !== WebSocket.OPEN) return;
   const frame = line + '\n';
   const bytes = byteLen(frame);
-  if (connMode === 'serial') {
-    if (!serialWriter) return;
-    serialWriter.write(new TextEncoder().encode(frame)).catch(() => {});
-  } else {
-    if (!ws || ws.readyState !== WebSocket.OPEN) return;
-    ws.send(frame);
-  }
+  ws.send(frame);
   rxInFlight += bytes;
   sentQueue.push({ line, bytes });
 }
@@ -3175,52 +3018,55 @@ function processGcode(text, name) {
     `X: 0.000&nbsp;&nbsp;Y: 0.000&nbsp;&nbsp;Z: 0.000<br>CUTS: ${totalMoves}&nbsp;&nbsp;RAPIDS: ${totalRapids}`;
   log('info','Loaded: '+name+' ('+gcodeLines.length+' lines, '+totalMoves+' cuts, '+totalRapids+' rapids)');
 
-  // Compute and display program limits — pass raw text for direct scanning
-  computeProgLimits(text);
+  // Compute and display program limits
+  computeProgLimits(gcodeLines);
 }
 
 // ═══════════════════════════════════════════════
 // PROGRAM LIMITS
 // ═══════════════════════════════════════════════
-let progLimits = null;  // { xMin, xMax, yMin, yMax, zMin, zMax } in WCS coords
+let progLimits = null;  // { xMin, xMax, yMin, yMax, zMin, zMax } in machine (WCS) coords
 
-function computeProgLimits(rawText) {
-  // Strip comments first (parens and semicolons), then scan for every X/Y/Z value
-  const stripped = rawText
-    .replace(/\(.*?\)/g, ' ')   // remove (inline comments)
-    .replace(/;[^\n]*/g, ' ');  // remove ; to end of line
+function computeProgLimits(lines) {
+  let x = 0, y = 0, z = 0;
+  let modalMotion = 0;
+  let hasAnyMove = false;
+  let xMin = Infinity, xMax = -Infinity;
+  let yMin = Infinity, yMax = -Infinity;
+  let zMin = Infinity, zMax = -Infinity;
 
-  let xVals = [], yVals = [], zVals = [];
+  for (const raw of lines) {
+    const line = raw.replace(/;.*/, '').replace(/\(.*?\)/g, '').trim().toUpperCase();
+    if (!line) continue;
 
-  // Find every occurrence of X, Y or Z followed immediately by an optional sign and number
-  const re = /([XYZ])([+-]?\.?\d+\.?\d*)/gi;
-  let m;
-  while ((m = re.exec(stripped)) !== null) {
-    const axis = m[1].toUpperCase();
-    const val  = parseFloat(m[2]);
-    if (isNaN(val)) continue;
-    if (axis === 'X') xVals.push(val);
-    else if (axis === 'Y') yVals.push(val);
-    else if (axis === 'Z') zVals.push(val);
+    const words = {};
+    const re = /([A-Z])([+-]?[\d.]+)/g;
+    let m;
+    while ((m = re.exec(line)) !== null) words[m[1]] = parseFloat(m[2]);
+
+    if ('G' in words) {
+      const g = words['G'];
+      if (g === 0 || g === 1 || g === 2 || g === 3) modalMotion = g;
+    }
+
+    if (!('X' in words) && !('Y' in words) && !('Z' in words)) continue;
+
+    const nx = 'X' in words ? words['X'] : x;
+    const ny = 'Y' in words ? words['Y'] : y;
+    const nz = 'Z' in words ? words['Z'] : z;
+
+    x = nx; y = ny; z = nz;
+    hasAnyMove = true;
+    if (x < xMin) xMin = x; if (x > xMax) xMax = x;
+    if (y < yMin) yMin = y; if (y > yMax) yMax = y;
+    if (z < zMin) zMin = z; if (z > zMax) zMax = z;
   }
 
-  if (!xVals.length && !yVals.length && !zVals.length) {
+  if (!hasAnyMove) {
     progLimits = null;
-    renderProgLimits();
-    return;
+  } else {
+    progLimits = { xMin, xMax, yMin, yMax, zMin, zMax };
   }
-
-  progLimits = {
-    xMin: xVals.length ? Math.min(...xVals) : 0,
-    xMax: xVals.length ? Math.max(...xVals) : 0,
-    yMin: yVals.length ? Math.min(...yVals) : 0,
-    yMax: yVals.length ? Math.max(...yVals) : 0,
-    zMin: zVals.length ? Math.min(...zVals) : 0,
-    zMax: zVals.length ? Math.max(...zVals) : 0,
-    hasX: xVals.length > 0,
-    hasY: yVals.length > 0,
-    hasZ: zVals.length > 0,
-  };
 
   renderProgLimits();
 }
@@ -3242,19 +3088,18 @@ function renderProgLimits() {
   contentEl.style.display = '';
   if (frameBtn) frameBtn.disabled = !connected;
 
-  const fmt  = v => v.toFixed(3);
+  const fmt = v => v.toFixed(3);
   const span = (mn, mx) => (mx - mn).toFixed(3);
-  const dash = '—';
 
-  document.getElementById('limXMin').textContent  = progLimits.hasX ? fmt(progLimits.xMin) : dash;
-  document.getElementById('limXMax').textContent  = progLimits.hasX ? fmt(progLimits.xMax) : dash;
-  document.getElementById('limXSpan').textContent = progLimits.hasX ? span(progLimits.xMin, progLimits.xMax) : dash;
-  document.getElementById('limYMin').textContent  = progLimits.hasY ? fmt(progLimits.yMin) : dash;
-  document.getElementById('limYMax').textContent  = progLimits.hasY ? fmt(progLimits.yMax) : dash;
-  document.getElementById('limYSpan').textContent = progLimits.hasY ? span(progLimits.yMin, progLimits.yMax) : dash;
-  document.getElementById('limZMin').textContent  = progLimits.hasZ ? fmt(progLimits.zMin) : dash;
-  document.getElementById('limZMax').textContent  = progLimits.hasZ ? fmt(progLimits.zMax) : dash;
-  document.getElementById('limZSpan').textContent = progLimits.hasZ ? span(progLimits.zMin, progLimits.zMax) : dash;
+  document.getElementById('limXMin').textContent  = fmt(progLimits.xMin);
+  document.getElementById('limXMax').textContent  = fmt(progLimits.xMax);
+  document.getElementById('limXSpan').textContent = span(progLimits.xMin, progLimits.xMax);
+  document.getElementById('limYMin').textContent  = fmt(progLimits.yMin);
+  document.getElementById('limYMax').textContent  = fmt(progLimits.yMax);
+  document.getElementById('limYSpan').textContent = span(progLimits.yMin, progLimits.yMax);
+  document.getElementById('limZMin').textContent  = fmt(progLimits.zMin);
+  document.getElementById('limZMax').textContent  = fmt(progLimits.zMax);
+  document.getElementById('limZSpan').textContent = span(progLimits.zMin, progLimits.zMax);
 }
 
 function frameProgram() {
@@ -3263,10 +3108,11 @@ function frameProgram() {
   if (isNaN(safeZ)) { log('err', 'Frame: invalid Safe Z value'); return; }
 
   const { xMin, xMax, yMin, yMax } = progLimits;
-  const f = v => v.toFixed(4);
+  const f = fmt4 = v => v.toFixed(4);
 
   log('info', `Framing program — X[${xMin.toFixed(3)} → ${xMax.toFixed(3)}] Y[${yMin.toFixed(3)} → ${yMax.toFixed(3)}] SafeZ:${safeZ}`);
 
+  // Lift Z first, then trace the XY rectangle, then return to start corner
   sendCmd(`G0 Z${f(safeZ)}`);
   sendCmd(`G0 X${f(xMin)} Y${f(yMin)}`);
   sendCmd(`G0 X${f(xMax)} Y${f(yMin)}`);
@@ -4831,48 +4677,6 @@ function toggleTouchKeyboard(evt) {
 }
 
 // ═══════════════════════════════════════════════
-// OPTIONS — CONNECTION MODE
-// ═══════════════════════════════════════════════
-function optSetConnMode(mode) {
-  if (connected) { log('err', 'Disconnect before changing connection type'); return; }
-  connMode = mode;
-  document.body.classList.toggle('conn-serial',    mode === 'serial');
-  document.body.classList.toggle('conn-websocket', mode === 'websocket');
-  document.getElementById('connBtnWs').classList.toggle('active',     mode === 'websocket');
-  document.getElementById('connBtnSerial').classList.toggle('active', mode === 'serial');
-  document.getElementById('optWsSection').style.display     = mode === 'websocket' ? '' : 'none';
-  document.getElementById('optSerialSection').style.display = mode === 'serial'    ? '' : 'none';
-  // Show unsupported banner if serial chosen but API absent
-  document.body.classList.toggle('serial-unsupported', mode === 'serial' && !navigator.serial);
-  optSaveConnSettings();
-}
-
-function optSaveConnSettings() {
-  try {
-    localStorage.setItem('fs-opt-conn', JSON.stringify({
-      mode:     connMode,
-      baud:     document.getElementById('optBaudRate').value,
-      dataBits: document.getElementById('optDataBits').value,
-      stopBits: document.getElementById('optStopBits').value,
-      parity:   document.getElementById('optParity').value,
-    }));
-  } catch(_) {}
-}
-
-function optLoadConnSettings() {
-  try {
-    const s = JSON.parse(localStorage.getItem('fs-opt-conn') || '{}');
-    if (s.baud)     document.getElementById('optBaudRate').value = s.baud;
-    if (s.dataBits) document.getElementById('optDataBits').value = s.dataBits;
-    if (s.stopBits) document.getElementById('optStopBits').value = s.stopBits;
-    if (s.parity)   document.getElementById('optParity').value   = s.parity;
-    optSetConnMode(s.mode || 'websocket');
-  } catch(_) {
-    optSetConnMode('websocket');
-  }
-}
-
-// ═══════════════════════════════════════════════
 // OPTIONS — COLOUR THEME
 // ═══════════════════════════════════════════════
 const OPT_COLOR_DEFAULTS = {
@@ -5032,7 +4836,6 @@ function optLoadTabLocks() {
 
 // Initialise options on page load
 window.addEventListener('load', () => {
-  optLoadConnSettings();
   optLoadColors();
   optLoadTabLocks();
   optBuildTabLockList();
